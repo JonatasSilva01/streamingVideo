@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Convert WebM to MP4</title>
+</head>
+<body>
+  <h1>WebM to MP4 Converter</h1>
+  <input type="file" id="fileInput" accept=".webm">
+  <button id="convertBtn" disabled>Convert to MP4</button>
+  <a id="downloadLink" style="display: none;">Download MP4</a>
+
+  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.9.7/dist/ffmpeg.min.js"></script>
+  <script>
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    const ffmpeg = createFFmpeg({ log: true });
+    const fileInput = document.getElementById('fileInput');
+    const convertBtn = document.getElementById('convertBtn');
+    const downloadLink = document.getElementById('downloadLink');
+
+    let webmFile;
+
+    fileInput.addEventListener('change', (event) => {
+      webmFile = event.target.files[0];
+      if (webmFile && webmFile.type === 'video/webm') {
+        convertBtn.disabled = false;
+      }
+    });
+
+    convertBtn.addEventListener('click', async () => {
+      try {
+        if (!ffmpeg.isLoaded()) {
+          await ffmpeg.load();
+        }
+
+        // Carrega o arquivo WebM no ffmpeg
+        ffmpeg.FS('writeFile', 'input.webm', await fetchFile(webmFile));
+
+        // Converte o arquivo para MP4
+        await ffmpeg.run('-i', 'input.webm', 'output.mp4');
+
+        // Obtém o arquivo convertido
+        const data = ffmpeg.FS('readFile', 'output.mp4');
+
+        // Cria um Blob e URL de download
+        const mp4Blob = new Blob([data.buffer], { type: 'video/mp4' });
+        const url = URL.createObjectURL(mp4Blob);
+
+        // Atualiza o link de download
+        downloadLink.href = url;
+        downloadLink.download = 'converted-video.mp4';
+        downloadLink.style.display = 'block';
+        downloadLink.textContent = 'Download MP4';
+
+        // Reseta o botão
+        convertBtn.disabled = true;
+      } catch (error) {
+        console.error('Erro durante a conversão:', error);
+      }
+    });
+  </script>
+</body>
+</html>
