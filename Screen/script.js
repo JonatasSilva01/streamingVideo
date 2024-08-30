@@ -33,8 +33,9 @@ startBtn.addEventListener('click', async () => {
       video.src = url;
       video.play();
       
-      // Define o link de download
+      // Define o link de download com nome personalizado
       downloadLink.href = url;
+      downloadLink.download = `gravação_${new Date().toISOString().split('T')[0]}.webm`;  // Nome do arquivo baseado na data
       downloadLink.style.display = 'block';  // Mostra o link de download
       recordedChunks = [];  // Reseta os chunks
     };
